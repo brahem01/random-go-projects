@@ -12,7 +12,7 @@ func main() {
 	}
 	sec := atoi(os.Args[1])
 	for sec != 0 {
-		fmt.Printf(" %2d: %2d\r", sec/60, sec%60)
+		fmt.Printf(" %.2d: %.2d\r", sec/60, sec%60)
 		time.Sleep(1 * time.Second)
 		sec--
 	}
