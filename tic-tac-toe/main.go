@@ -21,13 +21,27 @@ func initializeBoard() {
 
 // Display the current state of the board
 func displayBoard() {
-	fmt.Println("  0 1 2")
-	for i := 0; i < 3; i++ {
-		fmt.Printf("%d %s|%s|%s\n", i, board[i][0], board[i][1], board[i][2])
-		if i < 2 {
-			fmt.Println("  -+-+-")
+	fmt.Println("Enter the resolution(0 1 2)")
+	for i,row:= range board{
+		for j, squart := range row {
+			fmt.Print(" ")
+			switch squart {
+			case " ":
+				fmt.Print(" ")
+			case "X":
+				fmt.Print("X")
+			case "O":
+				fmt.Print("O")
+			}
+			if j != len(row)-1 {
+				fmt.Print(" |")
+			}
+		}
+		if i != len(board) -1 {
+			fmt.Println("\n-----------")
 		}
 	}
+	fmt.Println()
 }
 
 // Get the next move from the player
