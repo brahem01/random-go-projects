@@ -2,13 +2,19 @@ package main
 
 import (
 	"fmt"
-	"bufio"
 	"os"
-	"strconv"
 )
+
+// func atoi(s string) (n int) {
+// 	for _, v := range s {
+// 		n = n*10 + int(rune(v)-48)
+// 	}
+// 	return
+// }
 
 // Define the board (3x3 grid)
 var board [3][3]string
+var currentPlayer string
 
 // Initialize the board with empty cells
 func initializeBoard() {
@@ -22,7 +28,7 @@ func initializeBoard() {
 // Display the current state of the board
 func displayBoard() {
 	fmt.Println("Enter the resolution(0 1 2)")
-	for i,row:= range board{
+	for i, row := range board {
 		for j, squart := range row {
 			fmt.Print(" ")
 			switch squart {
@@ -37,100 +43,68 @@ func displayBoard() {
 				fmt.Print(" |")
 			}
 		}
-		if i != len(board) -1 {
+		if i != len(board)-1 {
 			fmt.Println("\n-----------")
 		}
 	}
 	fmt.Println()
 }
 
-// Get the next move from the player
-func getNextMove(player string) (int, int) {
-	fmt.Printf("%s's turn. Enter row (0-2): ", player)
-	rowInput := readInput()
-	row, _ := strconv.Atoi(rowInput)
-
-	fmt.Printf("%s's turn. Enter column (0-2): ", player)
-	colInput := readInput()
-	col, _ := strconv.Atoi(colInput)
-
+func getPlayerInfo(player string) (row, col int) {
+	fmt.Printf("%v turn, Enter row (0-2): ", player)
+	fmt.Scanln(&row)
+	fmt.Printf("%v turn, Enter column (0-2): ", player)
+	fmt.Scanln(&col)
+	if !validInput(row, col) {
+		fmt.Println("you just entered a location out of the gameBoard!")
+		return getPlayerInfo(player)
+	}
+	if !spaceFree(row, col) {
+		fmt.Println("the place is not empty")
+		return getPlayerInfo(player)
+	}
 	return row, col
 }
 
-// Read input from the console
-func readInput() string {
-	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	return input[:len(input)-1]
+func validInput(row, col int) bool {
+	return row >= 0 && row <= 2 && col >= 0 && col <= 2
 }
 
-// Main function
+func spaceFree(row, col int) bool {
+	return board[row][col] == " "
+}
+
 func main() {
 	initializeBoard()
-	currentPlayer := "X"
-
+	currentPlayer = os.Args[1]
 	for {
 		displayBoard()
-		row, col := getNextMove(currentPlayer)
-
-		if board[row][col] != " " {
-			fmt.Println("Cell already occupied. Try again.")
-			continue
-		}
+		row, col := getPlayerInfo(currentPlayer)
 
 		board[row][col] = currentPlayer
 
-		// Switch players
+		end, winner := checkWinner()
+		if end {
+			displayBoard()
+			fmt.Printf("Congratulation player %v, you are the winner", winner)
+			break
+		}
+		if boarFull() {
+			displayBoard()
+			fmt.Println("End game, is a tie")
+			break
+		}
 		if currentPlayer == "X" {
 			currentPlayer = "O"
 		} else {
 			currentPlayer = "X"
 		}
-		end, winner:= CheckWin()
-		if end {
-			displayBoard()
-			fmt.Println("the winner is: ", winner)
-			break
-		}
-		if fullBoard() {
-			displayBoard()
-			fmt.Println("is a ta3adol")
-			break
-		}
 	}
 }
-
-func CheckWin() (bool, string) {
-	// Check rows
-	for i := 0; i < 3; i++ {
-		if board[i][0] != " " && board[i][0] == board[i][1] && board[i][1] == board[i][2] {
-			return true, board[i][0]
-		}
-	}
-
-	// Check columns
-	for j := 0; j < 3; j++ {
-		if board[0][j] != " " && board[0][j] == board[1][j] && board[1][j] == board[2][j] {
-			return true, board[0][j]
-		}
-	}
-
-	// Check diagonals
-	if board[0][0] != " " && board[0][0] == board[1][1] && board[1][1] == board[2][2] {
-		return true, board[0][0]
-	}
-	if board[0][2] != " " && board[0][2] == board[1][1] && board[1][1] == board[2][0] {
-		return true, board[0][2]
-	}
-
-	return false, "" // No winner
-}
-
-
-func fullBoard() bool {
-	for _, v:= range board{
-		for _, char := range v {
-			if char == " "  {
+func boarFull() bool {
+	for _, col := range board {
+		for _, v := range col {
+			if v == " " {
 				return false
 			}
 		}
@@ -138,3 +112,20 @@ func fullBoard() bool {
 	return true
 }
 
+func checkWinner() (bool, string) {
+	for i := 0; i < 3; i++ {
+		if board[i][0] != " " && board[i][0] == board[i][1] && board[i][0] == board[i][2] {
+			return true, board[i][0]
+		}
+		if board[0][i] != " " && board[0][i] == board[1][i] && board[0][i] == board[2][i] {
+			return true, board[0][i]
+		}
+	}
+	if board[0][0] != " " && board[0][0] == board[1][1] && board[1][1] == board[2][2] {
+		return true, board[0][0]
+	}
+	if board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[1][1] != " " {
+		return true, board[1][1]
+	}
+	return false, ""
+}
